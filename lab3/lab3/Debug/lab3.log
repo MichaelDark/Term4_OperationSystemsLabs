@@ -1,4 +1,9 @@
-﻿  lab3.cpp
-d:\university\term_4\os - operating systems\lab3\lab3\lab3.cpp(17): warning C4018: '<': signed/unsigned mismatch
-d:\university\term_4\os - operating systems\lab3\lab3\lab3.cpp(25): warning C4018: '<': signed/unsigned mismatch
+﻿  MailBox.cpp
+d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(45): warning C4101: 'fileOperationSuccess': unreferenced local variable
+d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(83): warning C4101: 'countWritten': unreferenced local variable
+d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(126): warning C4018: '<': signed/unsigned mismatch
+d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(149): warning C4018: '>': signed/unsigned mismatch
+d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(165): warning C4101: 'dwCount': unreferenced local variable
+  lab3.cpp
+  Generating Code...
   lab3.vcxproj -> D:\university\term_4\OS - Operating Systems\lab3\Debug\lab3.exe

@@ -5,45 +5,37 @@
 #include <windows.h>
 #include <string.h>
 
-enum {
-	MAILBOX_OK,
-	MAILBOX_CREATE,
-	MAILBOX_FILE,
-	MAILBOX_NUMBER,
-	MAILBOX_CS
-};
+#define HEADER_SIZE sizeof(DWORD) * 3
+#define WRITEMESSAGE_BEGIN 0
+#define WRITEMESSAGE_AFTER 1
+#define WRITEMESSAGE_END 2
 
-typedef struct _MAILBOX_TITLE
-{
+#define SYMBOL_SIZE 2
+
+class Mailbox {
 	TCHAR FilePath[MAX_PATH];
-	DWORD MaxSize, MessageCounts;
-} MAILBOX_TITLE, *PMAILBOX_TITLE;
-
-class MAILBOX {
-	MAILBOX_TITLE Title;
-	DWORD dwError;
-	static int count;
-	DWORD dwCurSize;
-	DWORD dwCS; // Контрольна сума
+	DWORD _messageCount;
+	DWORD _totalSize;
+	DWORD _maxSize;
 public:
-	MAILBOX(LPCTSTR fName, size_t MaxSize = 0);
-	MAILBOX& operator+=(LPCTSTR Msg); // Додати лист
-	MAILBOX& operator-=(DWORD Number); // Видалити лист за номером
-	DWORD operator()() 
-	{ // Кількість листів
-		return Title.MessageCounts;
-	}
-	// Кількість листів
-	DWORD ReadCounts() 
+	Mailbox(LPCTSTR fName, size_t MaxSize = 1000);
+	Mailbox& operator+=(LPCTSTR Msg); 
+	Mailbox& operator-=(DWORD Number); 
+
+	void Write(LPCTSTR Msg, DWORD Mode);
+	void WriteBegin(LPCTSTR Msg);
+	void WriteEnd(LPCTSTR Msg);
+	void WriteAt(DWORD Position, LPCTSTR Msg);
+
+	void ShiftToRight(DWORD from, DWORD to);
+	DWORD ReadMessage(TCHAR *res, DWORD i);
+
+	DWORD MessageCount() 
 	{
-		return Title.MessageCounts;
+		return _messageCount;
 	}
-	// Читання листа з заданим номером
-	DWORD RdMsg(TCHAR *res, DWORD i);
-	// Знищити усі листи
 	void Clear();
-	DWORD GetLastError() { return dwError; }
-	~MAILBOX() { count--; }
+	~Mailbox() {}
 };
 // Контрольна сума
-DWORD GetControlSum(PBYTE pMem, DWORD dwCount);
+//DWORD GetControlSum(PBYTE pMem, DWORD dwCount);

@@ -3,6 +3,7 @@
 #include "MailBox.h"
 #include "mailBox.h"
 
+/*
 DWORD GetControlSumForFile(LPCTSTR fName) 
 {
 	HANDLE h = CreateFile(fName, GENERIC_READ | GENERIC_WRITE,
@@ -21,7 +22,7 @@ DWORD GetControlSumForFile(LPCTSTR fName)
 	CloseHandle(h);
 	return b ? MAILBOX_OK : MAILBOX_FILE;
 }
-
+*/
 DWORD GetControlSum(PBYTE pMem, DWORD dwCount) 
 {
 	DWORD dwCS = 0;
@@ -39,115 +40,139 @@ DWORD GetControlSum(PBYTE pMem, DWORD dwCount)
 	return dwCS;
 }
 
-int MAILBOX::count = 0;
-
-MAILBOX::MAILBOX(LPCTSTR fName, size_t MaxSize) 
+Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize) 
 {
 	BOOL fileOperationSuccess;
-	DWORD dwCount;
-	_tcscpy_s(Title.FilePath, fName);
-	HANDLE fileHandle = CreateFile(fName, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+	DWORD countWritten;
+	_tcscpy_s(FilePath, filePath);
+	HANDLE fileHandle = CreateFile(filePath, GENERIC_READ, 
+		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+
 	if (fileHandle == INVALID_HANDLE_VALUE) 
 	{
-		if (MaxSize) 
-		{
-			Title.MaxSize = MaxSize;
-			Title.MessageCounts = 0;
-			fileHandle = CreateFile(fName, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_NEW, 0, 0);
+		_messageCount = 0;
+		_totalSize = HEADER_SIZE;
+		_maxSize = MaxSize;
+		fileHandle = CreateFile(filePath, GENERIC_WRITE, 
+			FILE_SHARE_READ, 0, CREATE_NEW, 0, 0);
 
-			if (fileHandle == INVALID_HANDLE_VALUE) 
-			{
-				dwError = MAILBOX_FILE;
-				return;
-			}
-			dwCS = GetControlSum((PBYTE)& Title, sizeof(Title));
-			fileOperationSuccess = WriteFile(fileHandle, & Title, sizeof(Title), & dwCount, 0);
-			if (fileOperationSuccess)
-			{
-				fileOperationSuccess = WriteFile(fileHandle, &dwCS, sizeof(dwCS), &dwCount, 0);
-			}
-			CloseHandle(fileHandle);
-			dwCurSize = sizeof(Title) + sizeof(dwCS);
-			if (!fileOperationSuccess) 
-			{
-				dwError = MAILBOX_FILE;
-				return;
-			}
-			dwError = MAILBOX_OK;
-		}
-		else 
-		{
-			dwError = MAILBOX_CREATE;
-			return;
-		}
+		WriteFile(fileHandle, &_messageCount, sizeof(DWORD), &countWritten, 0);
+		WriteFile(fileHandle, &_totalSize, sizeof(DWORD), &countWritten, 0);
+		WriteFile(fileHandle, &_maxSize, sizeof(DWORD), &countWritten, 0);
+
+		CloseHandle(fileHandle);
 	}
 	else 
 	{
-		dwCurSize = GetFileSize(fileHandle, 0);
-		PBYTE pMem = new BYTE[dwCurSize];
-		fileOperationSuccess = ReadFile(fileHandle, pMem, dwCurSize, & dwCount, 0);
-		if (fileOperationSuccess) 
-		{
-			dwCS = *(DWORD*)(pMem + dwCurSize - 4);
-			DWORD CalcCS = GetControlSum(pMem, dwCurSize - 4);
-			dwError = CalcCS == dwCS ? MAILBOX_OK : MAILBOX_CS;
-			PMAILBOX_TITLE pTitle = (PMAILBOX_TITLE)pMem;
-			Title = *pTitle;
-		}
-		else 
-		{
-			dwError = MAILBOX_FILE;
-		}
-		delete[]pMem;
+		ReadFile(fileHandle, &_messageCount, 4, &countWritten, 0);
+		ReadFile(fileHandle, &_totalSize, 4, &countWritten, 0);
+		ReadFile(fileHandle, &_maxSize, 4, &countWritten, 0);
+
 		CloseHandle(fileHandle);
 	}
 }
-MAILBOX& MAILBOX::operator+=(LPCTSTR Msg) 
+
+Mailbox& Mailbox::operator+=(LPCTSTR Msg) 
 {
-	DWORD dwLen = _tcslen(Msg) * sizeof(DWORD);
-	dwError = MAILBOX_CREATE;
-	if (Title.MaxSize >= dwCurSize + dwLen + sizeof(DWORD)) 
-	{
-		Title.MessageCounts += 1;
-		dwError = MAILBOX_FILE;
-		HANDLE h = CreateFile(Title.FilePath, GENERIC_READ |
-			GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-		BOOL b;
-		DWORD dwCount;
-		if (h != INVALID_HANDLE_VALUE) 
-		{
-			b = WriteFile(h, & Title, sizeof(Title), & dwCount, 0);
-			if (b) 
-			{
-				LONG dwHigeOffs = -1;
-				SetFilePointer(h, -4, & dwHigeOffs, FILE_END);
-				b = WriteFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
-				if (b) b = WriteFile(h, Msg, dwLen, & dwCount, 0);
-				CloseHandle(h); h = INVALID_HANDLE_VALUE;
-				if (b) 
-				{
-					dwError = GetControlSumForFile(Title.FilePath);
-				}
-			}
-			if (h != INVALID_HANDLE_VALUE) CloseHandle(h);
-		}
-	}
+	WriteEnd(Msg);
 	return *this;
 }
-DWORD MAILBOX::RdMsg(TCHAR *msg, DWORD i) 
+
+void Mailbox::Write(LPCTSTR Msg, DWORD Mode)
+{
+	DWORD countWritten;
+	DWORD messLen = _tcslen(Msg);
+	DWORD messLenBytes = messLen * SYMBOL_SIZE;
+
+	if (_maxSize >= _totalSize + messLenBytes + sizeof(DWORD))
+	{
+		if (Mode == WRITEMESSAGE_END)
+		{
+			WriteEnd(Msg);
+		}
+	}
+}
+void Mailbox::WriteBegin(LPCTSTR Msg)
+{
+	WriteAt(HEADER_SIZE, Msg);
+}
+void Mailbox::WriteEnd(LPCTSTR Msg)
+{
+	WriteAt(_totalSize, Msg);
+}
+void Mailbox::WriteAt(DWORD Position, LPCTSTR Msg)
+{
+	DWORD countWritten;
+	DWORD messLen = _tcslen(Msg);
+	DWORD messLenBytes = messLen * SYMBOL_SIZE;
+
+	if (_maxSize >= _totalSize + messLenBytes + sizeof(DWORD))
+	{
+		if (Position != _totalSize)
+		{
+			ShiftToRight(Position, Position + messLenBytes + sizeof(DWORD));
+		}
+
+		HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+		DWORD currPos = Position;
+		_messageCount++;
+		_totalSize += messLenBytes + sizeof(DWORD);
+
+		SetFilePointer(fileHandle, currPos, 0, FILE_BEGIN);
+		WriteFile(fileHandle, &messLenBytes, sizeof(DWORD), &countWritten, 0);
+		currPos += sizeof(DWORD);
+
+		for (int i = 0; i < messLen; i++)
+		{
+			SetFilePointer(fileHandle, currPos, 0, FILE_BEGIN);
+			WriteFile(fileHandle, &Msg[i], SYMBOL_SIZE, &countWritten, 0);
+			currPos += SYMBOL_SIZE;
+		}
+
+		SetFilePointer(fileHandle, 0, 0, FILE_BEGIN);
+		WriteFile(fileHandle, &_messageCount, sizeof(DWORD), &countWritten, 0);
+		WriteFile(fileHandle, &_totalSize, sizeof(DWORD), &countWritten, 0);
+
+		CloseHandle(fileHandle);
+	}
+}
+void Mailbox::ShiftToRight(DWORD from, DWORD to)
+{
+	HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+	DWORD moveFrom = from;
+	DWORD moveTo = to;
+	DWORD difference = to - from;
+	DWORD countWritten;
+
+	for (int i = _totalSize; i > moveFrom; i--)
+	{
+		BYTE currByte;
+		SetFilePointer(fileHandle, i - 1, 0, FILE_BEGIN);
+		ReadFile(fileHandle, &currByte, 1, &countWritten, 0);
+
+		SetFilePointer(fileHandle, i + difference - 1, 0, FILE_BEGIN);
+		WriteFile(fileHandle, &currByte, 1, &countWritten, 0);
+	}
+
+	CloseHandle(fileHandle);
+}
+
+DWORD Mailbox::ReadMessage(TCHAR *msg, DWORD i) 
 {
 	BOOL b = TRUE;
-	DWORD dwLen, dwCount;
-	dwError = MAILBOX_NUMBER;
-	if (i < Title.MessageCounts) 
+	DWORD dwLen = 0, dwCount;
+	/*dwError = MAILBOX_NUMBER;
+	if (i < _header.MessageCounts) 
 	{
 		dwError = MAILBOX_FILE;
-		HANDLE h = CreateFile(Title.FilePath, GENERIC_READ,
+		HANDLE h = CreateFile(_header.FilePath, GENERIC_READ,
 
 			FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
 		if (h != INVALID_HANDLE_VALUE) 
 		{
-			SetFilePointer(h, sizeof(Title), 0, FILE_BEGIN);
+			SetFilePointer(h, sizeof(_header), 0, FILE_BEGIN);
 			for (DWORD j = 0; j < i; ++j) 
 			{
 				b = ReadFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
@@ -163,52 +188,52 @@ DWORD MAILBOX::RdMsg(TCHAR *msg, DWORD i)
 			dwError = b ? MAILBOX_OK : MAILBOX_FILE;
 			CloseHandle(h);
 		}
-	}
+	}*/
 	return dwLen;
 }
-MAILBOX& MAILBOX::operator -=(DWORD i) 
+Mailbox& Mailbox::operator -=(DWORD i) 
 {
-	dwError = MAILBOX_NUMBER;
-	if (i < Title.MessageCounts)
-	{
-		Title.MessageCounts -= 1;
-		dwError = MAILBOX_FILE;
-		HANDLE h = CreateFile(Title.FilePath, GENERIC_READ |
-			GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-		dwCurSize = GetFileSize(h, 0);
-		BOOL b;
-		DWORD dwCount, dwLen = 0;
-		if (h != INVALID_HANDLE_VALUE)
-		{
-			b = WriteFile(h, & Title, sizeof(Title), & dwCount, 0);
-			DWORD dwOld = sizeof(Title), dwNew, dwCnt;
-			if (b)
-			{
-				for (DWORD j = 0; j < i; ++j)
-				{
-					b = ReadFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
-					if (!b) break;
-					dwOld = SetFilePointer(h, dwLen, 0, FILE_CURRENT);
-				}
-				b = ReadFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
-				dwNew = SetFilePointer(h, dwLen, 0, FILE_CURRENT);
-				dwCnt = dwCurSize - dwNew - 4;
-				PBYTE pMem = new BYTE[dwCnt];
-				SetFilePointer(h, dwNew, 0, FILE_BEGIN);
-				b = ReadFile(h, pMem, dwCnt, & dwCount, 0);
-				if (b)
-				{
-					SetFilePointer(h, dwOld, 0, FILE_BEGIN);
-					b = WriteFile(h, pMem, dwCnt, & dwCount, 0);
-					SetEndOfFile(h);
-				}
-				delete[]pMem;
-				dwError = b ? MAILBOX_OK : MAILBOX_FILE;
-			}
-			if (h != INVALID_HANDLE_VALUE)
-				CloseHandle(h);
-			if (b) dwError = GetControlSumForFile(Title.FilePath);
-		}
-	}
+	//dwError = MAILBOX_NUMBER;
+	//if (i < _header.MessageCounts)
+	//{
+	//	_header.MessageCounts -= 1;
+	//	dwError = MAILBOX_FILE;
+	//	HANDLE h = CreateFile(_header.FilePath, GENERIC_READ |
+	//		GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+	//	dwCurSize = GetFileSize(h, 0);
+	//	BOOL b;
+	//	DWORD dwCount, dwLen = 0;
+	//	if (h != INVALID_HANDLE_VALUE)
+	//	{
+	//		b = WriteFile(h, & _header, sizeof(_header), & dwCount, 0);
+	//		DWORD dwOld = sizeof(_header), dwNew, dwCnt;
+	//		if (b)
+	//		{
+	//			for (DWORD j = 0; j < i; ++j)
+	//			{
+	//				b = ReadFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
+	//				if (!b) break;
+	//				dwOld = SetFilePointer(h, dwLen, 0, FILE_CURRENT);
+	//			}
+	//			b = ReadFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
+	//			dwNew = SetFilePointer(h, dwLen, 0, FILE_CURRENT);
+	//			dwCnt = dwCurSize - dwNew - 4;
+	//			PBYTE pMem = new BYTE[dwCnt];
+	//			SetFilePointer(h, dwNew, 0, FILE_BEGIN);
+	//			b = ReadFile(h, pMem, dwCnt, & dwCount, 0);
+	//			if (b)
+	//			{
+	//				SetFilePointer(h, dwOld, 0, FILE_BEGIN);
+	//				b = WriteFile(h, pMem, dwCnt, & dwCount, 0);
+	//				SetEndOfFile(h);
+	//			}
+	//			delete[]pMem;
+	//			dwError = b ? MAILBOX_OK : MAILBOX_FILE;
+	//		}
+	//		if (h != INVALID_HANDLE_VALUE)
+	//			CloseHandle(h);
+	//		//if (b) dwError = GetControlSumForFile(_header.FilePath);
+	//	}
+	//}
 	return *this;
 }
