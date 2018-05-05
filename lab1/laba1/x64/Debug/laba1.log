@@ -1,0 +1,7 @@
+﻿  laba1.cpp
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(125): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(126): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(124): warning C4101: 'remainder': unreferenced local variable
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(146): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  laba1.vcxproj -> G:\term_4\OS - Operating Systems\laba1\x64\Debug\laba1.exe
+  laba1.vcxproj -> G:\term_4\OS - Operating Systems\laba1\x64\Debug\laba1.pdb (Full PDB)

@@ -1,0 +1,14 @@
+﻿  stdafx.cpp
+  laba1.cpp
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(47): warning C4018: <: несоответствие типов со знаком и без знака
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(59): warning C4018: <: несоответствие типов со знаком и без знака
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(68): warning C4018: <: несоответствие типов со знаком и без знака
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(81): warning C4018: <: несоответствие типов со знаком и без знака
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(95): warning C4018: <: несоответствие типов со знаком и без знака
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(104): warning C4018: <: несоответствие типов со знаком и без знака
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(106): warning C4477: "wprintf": в строке форматирования "%s" требуется аргумент типа "wchar_t *", но вариативный аргумент "2" имеет тип "char *"
+  g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(106): note: рекомендуется использовать "%hs" в строке форматирования
+  g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(106): note: рекомендуется использовать "%Ts" в строке форматирования
+  g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(106): note: это предупреждение основано на нестандартной семантике, используемой Visual C++
+g:\term_4\os - operating systems\laba1\laba1\laba1.cpp(124): warning C4101: remainder: неиспользованная локальная переменная
+  laba1.vcxproj -> G:\term_4\OS - Operating Systems\laba1\Debug\laba1.exe

@@ -1,0 +1,8 @@
+﻿  stdafx.cpp
+  StaticRSA.cpp
+g:\term_4\os - operating systems\rsa\rsa\staticrsa\staticrsa.cpp(57): warning C4553: '==': operator has no effect; did you intend '='?
+g:\term_4\os - operating systems\rsa\rsa\staticrsa\staticrsa.cpp(105): warning C4553: '==': operator has no effect; did you intend '='?
+g:\term_4\os - operating systems\rsa\rsa\staticrsa\staticrsa.cpp(55): warning C4477: 'printf' : format string '%u' requires an argument of type 'unsigned int', but variadic argument 1 has type 'const char *'
+g:\term_4\os - operating systems\rsa\rsa\staticrsa\staticrsa.cpp(103): warning C4477: 'printf' : format string '%u' requires an argument of type 'unsigned int', but variadic argument 1 has type 'const char *'
+  StaticRSA.vcxproj -> G:\term_4\OS - Operating Systems\RSA\RSA\Debug\StaticRSA.exe
+  StaticRSA.vcxproj -> G:\term_4\OS - Operating Systems\RSA\RSA\Debug\StaticRSA.pdb (Full PDB)

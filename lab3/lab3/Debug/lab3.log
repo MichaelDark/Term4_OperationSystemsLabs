@@ -1,0 +1,4 @@
+﻿  lab3.cpp
+d:\university\term_4\os - operating systems\lab3\lab3\lab3.cpp(17): warning C4018: '<': signed/unsigned mismatch
+d:\university\term_4\os - operating systems\lab3\lab3\lab3.cpp(25): warning C4018: '<': signed/unsigned mismatch
+  lab3.vcxproj -> D:\university\term_4\OS - Operating Systems\lab3\Debug\lab3.exe
