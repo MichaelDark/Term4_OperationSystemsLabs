@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <stdio.h>
 #include "MailBox.h"
-#include "mailBox.h"
 
 /*
 DWORD GetControlSumForFile(LPCTSTR fName) 
@@ -106,6 +105,31 @@ void Mailbox::Delete(DWORD Index)
 	_messageCount--;
 
 	UpdateHeader();
+}
+
+TCHAR* Mailbox::operator[] (DWORD Index)
+{
+	Index--;
+	if (!ExistsIndex(Index))
+	{
+		return new TCHAR[MAX_PATH];
+	}
+
+	Bounds messagePosition = GetMessageBounds(Index);
+	DWORD countWritten;
+	DWORD byteLength;
+	HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ,
+		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+
+	SetFilePointer(fileHandle, messagePosition.firstByte, 0, FILE_BEGIN);
+	ReadFile(fileHandle, &byteLength, sizeof(DWORD), &countWritten, 0);
+	TCHAR* message = new TCHAR[byteLength + 1];
+	ReadFile(fileHandle, message, byteLength, &countWritten, 0);
+	message[byteLength] = _T('\0');
+	DWORD d = _tcslen(message);
+	CloseHandle(fileHandle);
+
+	return message;
 }
 
 BOOL Mailbox::ExistsIndex(DWORD Index)
@@ -227,39 +251,6 @@ void Mailbox::UpdateHeader()
 	WriteFile(fileHandle, &_totalSize, sizeof(DWORD), &countWritten, 0);
 
 	CloseHandle(fileHandle);
-}
-
-DWORD Mailbox::ReadMessage(TCHAR *msg, DWORD i) 
-{
-	BOOL b = TRUE;
-	DWORD dwLen = 0, dwCount;
-	/*dwError = MAILBOX_NUMBER;
-	if (i < _header.MessageCounts) 
-	{
-		dwError = MAILBOX_FILE;
-		HANDLE h = CreateFile(_header.FilePath, GENERIC_READ,
-
-			FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-		if (h != INVALID_HANDLE_VALUE) 
-		{
-			SetFilePointer(h, sizeof(_header), 0, FILE_BEGIN);
-			for (DWORD j = 0; j < i; ++j) 
-			{
-				b = ReadFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
-				if (!b) break;
-				SetFilePointer(h, dwLen, 0, FILE_CURRENT);
-			}
-			if (b) b = ReadFile(h, & dwLen, sizeof(dwLen), & dwCount, 0);
-			if (b && msg)
-			{
-				b = ReadFile(h, msg, dwLen, & dwCount, 0);
-				msg[dwLen / sizeof(TCHAR)] = 0;
-			}
-			dwError = b ? MAILBOX_OK : MAILBOX_FILE;
-			CloseHandle(h);
-		}
-	}*/
-	return dwLen;
 }
 
 //DELETE
