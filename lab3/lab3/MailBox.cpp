@@ -42,7 +42,6 @@ DWORD GetControlSum(PBYTE pMem, DWORD dwCount)
 
 Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize) 
 {
-	BOOL fileOperationSuccess;
 	DWORD countWritten;
 	_tcscpy_s(FilePath, filePath);
 	HANDLE fileHandle = CreateFile(filePath, GENERIC_READ, 
@@ -72,35 +71,49 @@ Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize)
 	}
 }
 
-Mailbox& Mailbox::operator+=(LPCTSTR Msg) 
-{
-	WriteEnd(Msg);
-	return *this;
-}
-
-void Mailbox::Write(LPCTSTR Msg, DWORD Mode)
-{
-	DWORD countWritten;
-	DWORD messLen = _tcslen(Msg);
-	DWORD messLenBytes = messLen * SYMBOL_SIZE;
-
-	if (_maxSize >= _totalSize + messLenBytes + sizeof(DWORD))
-	{
-		if (Mode == WRITEMESSAGE_END)
-		{
-			WriteEnd(Msg);
-		}
-	}
-}
 void Mailbox::WriteBegin(LPCTSTR Msg)
 {
-	WriteAt(HEADER_SIZE, Msg);
+	WriteAtPosition(HEADER_SIZE, Msg);
+}
+void Mailbox::Write(LPCTSTR Msg, DWORD Index)
+{
+	Index--;
+	if (!ExistsIndex(Index))
+	{
+		return;
+	}
+
+	Bounds message = GetMessageBounds(Index);
+
+	WriteAtPosition(message.firstByte, Msg);
 }
 void Mailbox::WriteEnd(LPCTSTR Msg)
 {
-	WriteAt(_totalSize, Msg);
+	WriteAtPosition(_totalSize, Msg);
 }
-void Mailbox::WriteAt(DWORD Position, LPCTSTR Msg)
+void Mailbox::Delete(DWORD Index)
+{
+	Index--;
+	if (!ExistsIndex(Index))
+	{
+		return;
+	}
+
+	Bounds message = GetMessageBounds(Index);
+
+	ShiftToLeft(message);
+
+	_messageCount--;
+
+	UpdateHeader();
+}
+
+BOOL Mailbox::ExistsIndex(DWORD Index)
+{
+	return Index >= 0 && Index < _messageCount;
+}
+
+void Mailbox::WriteAtPosition(DWORD Position, LPCTSTR Msg)
 {
 	DWORD countWritten;
 	DWORD messLen = _tcslen(Msg);
@@ -110,7 +123,7 @@ void Mailbox::WriteAt(DWORD Position, LPCTSTR Msg)
 	{
 		if (Position != _totalSize)
 		{
-			ShiftToRight(Position, Position + messLenBytes + sizeof(DWORD));
+			ShiftToRight({ Position, Position + messLenBytes + sizeof(DWORD) });
 		}
 
 		HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
@@ -137,16 +150,16 @@ void Mailbox::WriteAt(DWORD Position, LPCTSTR Msg)
 		CloseHandle(fileHandle);
 	}
 }
-void Mailbox::ShiftToRight(DWORD from, DWORD to)
+void Mailbox::ShiftToRight(Bounds bounds)
 {
 	HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-	DWORD moveFrom = from;
-	DWORD moveTo = to;
-	DWORD difference = to - from;
+	DWORD leftBound = bounds.firstByte;
+	DWORD rightBound = bounds.lastByte;
+	DWORD difference = bounds.Difference();
 	DWORD countWritten;
 
-	for (int i = _totalSize; i > moveFrom; i--)
+	for (int i = _totalSize; i > leftBound; i--)
 	{
 		BYTE currByte;
 		SetFilePointer(fileHandle, i - 1, 0, FILE_BEGIN);
@@ -155,6 +168,63 @@ void Mailbox::ShiftToRight(DWORD from, DWORD to)
 		SetFilePointer(fileHandle, i + difference - 1, 0, FILE_BEGIN);
 		WriteFile(fileHandle, &currByte, 1, &countWritten, 0);
 	}
+
+	CloseHandle(fileHandle);
+}
+void Mailbox::ShiftToLeft(Bounds bounds)
+{
+	HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+	DWORD leftBound = bounds.firstByte;
+	DWORD rightBound = bounds.lastByte;
+	DWORD difference = bounds.Difference();
+	DWORD countWritten;
+
+	for (int i = leftBound; i < _totalSize; i++)
+	{
+		BYTE currByte;
+		SetFilePointer(fileHandle, i + difference, 0, FILE_BEGIN);
+		ReadFile(fileHandle, &currByte, 1, &countWritten, 0);
+
+		SetFilePointer(fileHandle, i, 0, FILE_BEGIN);
+		WriteFile(fileHandle, &currByte, 1, &countWritten, 0);
+	}
+
+	_totalSize -= difference;
+	SetFilePointer(fileHandle, _totalSize, 0, FILE_BEGIN);
+	SetEndOfFile(fileHandle);
+
+	CloseHandle(fileHandle);
+}
+
+Bounds Mailbox::GetMessageBounds(DWORD Index)
+{
+	HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+	DWORD currPos = HEADER_SIZE;
+	DWORD currSize = 0;
+	DWORD countWritten;
+
+	for (int i = 0; i <= Index; i++)
+	{
+		SetFilePointer(fileHandle, currPos, 0, FILE_BEGIN);
+		ReadFile(fileHandle, &currSize, sizeof(DWORD), &countWritten, 0);
+		currPos += currSize + sizeof(DWORD);
+	}
+
+	CloseHandle(fileHandle);
+
+	return { currPos - currSize - sizeof(DWORD), currPos };
+}
+
+void Mailbox::UpdateHeader()
+{
+	DWORD countWritten;
+	HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+
+	WriteFile(fileHandle, &_messageCount, sizeof(DWORD), &countWritten, 0);
+	WriteFile(fileHandle, &_totalSize, sizeof(DWORD), &countWritten, 0);
 
 	CloseHandle(fileHandle);
 }
@@ -191,8 +261,8 @@ DWORD Mailbox::ReadMessage(TCHAR *msg, DWORD i)
 	}*/
 	return dwLen;
 }
-Mailbox& Mailbox::operator -=(DWORD i) 
-{
+
+//DELETE
 	//dwError = MAILBOX_NUMBER;
 	//if (i < _header.MessageCounts)
 	//{
@@ -235,5 +305,4 @@ Mailbox& Mailbox::operator -=(DWORD i)
 	//		//if (b) dwError = GetControlSumForFile(_header.FilePath);
 	//	}
 	//}
-	return *this;
-}
+	
