@@ -6,13 +6,17 @@
 #include <string.h>
 
 #define HEADER_SIZE sizeof(DWORD) * 3
-
 #define SYMBOL_SIZE 2
+
+enum {
+	MAILBOX_Success = 1,
+	MAILBOX_Error = 0,
+	MAILBOX_Fatal = -1
+};
 
 struct Bounds {
 	DWORD firstByte;
 	DWORD lastByte;
-
 	DWORD Difference()
 	{
 		return lastByte - firstByte;
@@ -24,29 +28,29 @@ class Mailbox {
 	DWORD _messageCount;
 	DWORD _totalSize;
 	DWORD _maxSize;
+	DWORD _lastState;
+	DWORD countWritten;
+	DWORD countRead;
 public:
 	Mailbox(LPCTSTR fName, size_t MaxSize = 1000);
 
-	void WriteBegin(LPCTSTR Msg);
-	void Write(LPCTSTR Msg, DWORD Index);
-	void WriteEnd(LPCTSTR Msg);
-	void Delete(DWORD Index);
+	DWORD WriteBegin(LPCTSTR Msg);
+	DWORD Write(LPCTSTR Msg, DWORD Index);
+	DWORD WriteEnd(LPCTSTR Msg);
+	DWORD Delete(DWORD Index, TCHAR* res);
 	TCHAR* operator[] (DWORD Index);
 
 	BOOL ExistsIndex(DWORD Index);
-
-	DWORD MessageCount()
-	{
-		return _messageCount;
-	}
-	void Clear();
+	DWORD MessageCount();
+	DWORD TotalSize();
+	DWORD MaxSize();
+	DWORD Clear();
 	~Mailbox() {}
 private:
-	void ShiftToRight(Bounds bounds);
-	void ShiftToLeft(Bounds bounds);
-	Bounds GetMessageBounds(DWORD Index);
-	void WriteAtPosition(DWORD Position, LPCTSTR Msg);
-	void UpdateHeader();
+	HANDLE OpenFileRW();
+	DWORD ShiftToRight(HANDLE fileRW, Bounds bounds);
+	DWORD ShiftToLeft(HANDLE fileRW, Bounds bounds);
+	Bounds GetMessageBounds(HANDLE fileRW, DWORD Index);
+	DWORD WriteAtPosition(HANDLE fileRW, DWORD Position, LPCTSTR Msg);
+	DWORD UpdateHeader(HANDLE fileRW);
 };
-// Контрольна сума
-//DWORD GetControlSum(PBYTE pMem, DWORD dwCount);
