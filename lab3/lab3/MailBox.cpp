@@ -2,23 +2,6 @@
 #include <stdio.h>
 #include "MailBox.h"
 
-DWORD GetControlSum(PBYTE pMem, DWORD dwCount) 
-{
-	DWORD dwCS = 0;
-	DWORD dwFull = dwCount / 4;
-	PDWORD p32Mem = (PDWORD)pMem;
-	for (DWORD i = 0; i < dwFull; ++i)
-		dwCS += p32Mem[i];
-	DWORD dwNotFull = dwCount % 4;
-	if (dwNotFull) {
-		pMem += dwFull * 4;
-		DWORD dwNumber = 0;
-		memcpy(& dwNumber, pMem, dwNotFull);
-		dwCS += dwNumber;
-	}
-	return dwCS;
-}
-
 Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize) 
 {
 	_lastState = MAILBOX_Success;
@@ -221,14 +204,15 @@ BOOL Mailbox::CheckIntegrity()
 	for (int i = 0; i < messCount; i++)
 	{
 		DWORD currMessSize = -1;
-		TCHAR* currMess;
 
 		ReadFile(fileHandle, &currMessSize, sizeof(DWORD), &countRead, 0);
 		if (sizeof(DWORD) != countRead) { CloseHandle(fileHandle); return FALSE; }
 
+		TCHAR* currMess;
 		DWORD messageSize = (currMessSize / SYMBOL_SIZE);
 		currMess = new TCHAR[messageSize];
 		ReadFile(fileHandle, currMess, currMessSize, &countRead, 0);
+		delete[] currMess;
 		if (currMessSize != countRead) { CloseHandle(fileHandle); return FALSE; }
 	}
 
