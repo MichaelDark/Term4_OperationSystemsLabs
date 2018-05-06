@@ -1,8 +1,3 @@
-﻿  MailBox.cpp
-d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(203): warning C4018: '>': signed/unsigned mismatch
-d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(223): warning C4018: '<': signed/unsigned mismatch
-d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(246): warning C4018: '<=': signed/unsigned mismatch
-d:\university\term_4\os - operating systems\lab3\lab3\mailbox.cpp(277): warning C4018: '<': signed/unsigned mismatch
-  lab3.cpp
-  Generating Code...
+﻿  lab3.cpp
+d:\university\term_4\os - operating systems\lab3\lab3\lab3.cpp(59): warning C4018: '<=': signed/unsigned mismatch
   lab3.vcxproj -> D:\university\term_4\OS - Operating Systems\lab3\Debug\lab3.exe

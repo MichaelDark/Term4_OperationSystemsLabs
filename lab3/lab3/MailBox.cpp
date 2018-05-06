@@ -45,8 +45,11 @@ Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize)
 	else 
 	{
 		_lastState = ReadFile(fileHandle, &_messageCount, 4, &countRead, 0);
+		if (sizeof(DWORD) != countRead) { _lastState = MAILBOX_Fatal; CloseHandle(fileHandle); return; }
 		_lastState = ReadFile(fileHandle, &_totalSize, 4, &countRead, 0);
+		if (sizeof(DWORD) != countRead) { _lastState = MAILBOX_Fatal; CloseHandle(fileHandle); return; }
 		_lastState = ReadFile(fileHandle, &_maxSize, 4, &countRead, 0);
+		if (sizeof(DWORD) != countRead) { _lastState = MAILBOX_Fatal; CloseHandle(fileHandle); return; }
 		if (!_lastState) { _lastState = MAILBOX_Fatal; }
 
 		CloseHandle(fileHandle);
@@ -55,6 +58,12 @@ Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize)
 
 DWORD Mailbox::WriteBegin(LPCTSTR Msg)
 {
+	if (!CheckIntegrity())
+	{
+		_lastState = MAILBOX_Fatal;
+		return _lastState;
+	}
+
 	HANDLE fileHandle = OpenFileRW();
 	WriteAtPosition(fileHandle, HEADER_SIZE, Msg);
 	CloseHandle(fileHandle);
@@ -63,6 +72,12 @@ DWORD Mailbox::WriteBegin(LPCTSTR Msg)
 }
 DWORD Mailbox::Write(LPCTSTR Msg, DWORD Index)
 {
+	if (!CheckIntegrity())
+	{
+		_lastState = MAILBOX_Fatal;
+		return _lastState;
+	}
+
 	Index--;
 	if (!ExistsIndex(Index))
 	{
@@ -79,6 +94,12 @@ DWORD Mailbox::Write(LPCTSTR Msg, DWORD Index)
 }
 DWORD Mailbox::WriteEnd(LPCTSTR Msg)
 {
+	if (!CheckIntegrity())
+	{
+		_lastState = MAILBOX_Fatal;
+		return _lastState;
+	}
+
 	HANDLE fileHandle = OpenFileRW();
 	WriteAtPosition(fileHandle, _totalSize, Msg);
 	CloseHandle(fileHandle);
@@ -87,6 +108,12 @@ DWORD Mailbox::WriteEnd(LPCTSTR Msg)
 }
 DWORD Mailbox::Delete(DWORD Index, TCHAR* res)
 {
+	if (!CheckIntegrity())
+	{
+		_lastState = MAILBOX_Fatal;
+		return _lastState;
+	}
+
 	Index--;
 	if (!ExistsIndex(Index))
 	{
@@ -112,11 +139,13 @@ TCHAR* Mailbox::operator[] (DWORD Index)
 {
 	TCHAR* message;
 	Index--;
-	if (!ExistsIndex(Index))
+	BOOL Integrity = CheckIntegrity();
+	if (!Integrity || !ExistsIndex(Index))
 	{
+		if (!Integrity) { _lastState = MAILBOX_Fatal; } 
+		else { _lastState = MAILBOX_Error; }
 		message = new TCHAR[MAX_PATH];
 		message[0] = '\0';
-		_lastState = MAILBOX_Error;
 		return message;
 	}
 
@@ -126,10 +155,10 @@ TCHAR* Mailbox::operator[] (DWORD Index)
 	DWORD byteLength;
 
 	SetFilePointer(fileHandle, messagePosition.firstByte, 0, FILE_BEGIN);
-	ReadFile(fileHandle, &byteLength, sizeof(DWORD), &countWritten, 0);
+	ReadFile(fileHandle, &byteLength, sizeof(DWORD), &countRead, 0);
 	DWORD messageSize = (byteLength / SYMBOL_SIZE) + 1;
 	message = new TCHAR[messageSize];
-	ReadFile(fileHandle, message, byteLength, &countWritten, 0);
+	ReadFile(fileHandle, message, byteLength, &countRead, 0);
 	message[messageSize - 1] = _T('\0');
 	CloseHandle(fileHandle);
 
@@ -139,7 +168,14 @@ TCHAR* Mailbox::operator[] (DWORD Index)
 
 BOOL Mailbox::ExistsIndex(DWORD Index)
 {
-	return Index >= 0 && Index < _messageCount;
+	if (Index >= 0 && Index < _messageCount)
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
 }
 DWORD Mailbox::MessageCount()
 {
@@ -165,6 +201,40 @@ DWORD Mailbox::Clear()
 	return _lastState;
 }
 
+BOOL Mailbox::CheckIntegrity()
+{
+	HANDLE fileHandle = OpenFileRW();
+	DWORD messCount = -1, totalSize = -1, maxSize = -1;
+	ReadFile(fileHandle, &messCount, sizeof(DWORD), &countRead, 0);
+	if (sizeof(DWORD) != countRead) { CloseHandle(fileHandle); return FALSE; }
+	ReadFile(fileHandle, &totalSize, sizeof(DWORD), &countRead, 0);
+	if (sizeof(DWORD) != countRead) { CloseHandle(fileHandle); return FALSE; }
+	ReadFile(fileHandle, &maxSize, sizeof(DWORD), &countRead, 0);
+	if (sizeof(DWORD) != countRead) { CloseHandle(fileHandle); return FALSE; }
+	if (messCount < 0 || totalSize < 0 || maxSize < 0 || totalSize > maxSize)
+	{
+		CloseHandle(fileHandle);
+		return FALSE;
+	}
+
+	SetFilePointer(fileHandle, HEADER_SIZE, 0, FILE_BEGIN);
+	for (int i = 0; i < messCount; i++)
+	{
+		DWORD currMessSize = -1;
+		TCHAR* currMess;
+
+		ReadFile(fileHandle, &currMessSize, sizeof(DWORD), &countRead, 0);
+		if (sizeof(DWORD) != countRead) { CloseHandle(fileHandle); return FALSE; }
+
+		DWORD messageSize = (currMessSize / SYMBOL_SIZE);
+		currMess = new TCHAR[messageSize];
+		ReadFile(fileHandle, currMess, currMessSize, &countRead, 0);
+		if (currMessSize != countRead) { CloseHandle(fileHandle); return FALSE; }
+	}
+
+	CloseHandle(fileHandle);
+	return TRUE;
+}
 HANDLE Mailbox::OpenFileRW()
 {
 	HANDLE fileHandle = CreateFile(FilePath, GENERIC_READ | GENERIC_WRITE,
@@ -184,7 +254,7 @@ DWORD Mailbox::ShiftToRight(HANDLE fileHandle, Bounds bounds)
 	{
 		BYTE currByte;
 		SetFilePointer(fileHandle, i - 1, 0, FILE_BEGIN);
-		ReadFile(fileHandle, &currByte, 1, &countWritten, 0);
+		ReadFile(fileHandle, &currByte, 1, &countRead, 0);
 
 		SetFilePointer(fileHandle, i + difference - 1, 0, FILE_BEGIN);
 		WriteFile(fileHandle, &currByte, 1, &countWritten, 0);
@@ -204,7 +274,7 @@ DWORD Mailbox::ShiftToLeft(HANDLE fileHandle, Bounds bounds)
 	{
 		BYTE currByte;
 		SetFilePointer(fileHandle, i + difference, 0, FILE_BEGIN);
-		ReadFile(fileHandle, &currByte, 1, &countWritten, 0);
+		ReadFile(fileHandle, &currByte, 1, &countRead, 0);
 
 		SetFilePointer(fileHandle, i, 0, FILE_BEGIN);
 		WriteFile(fileHandle, &currByte, 1, &countWritten, 0);
@@ -226,7 +296,7 @@ Bounds Mailbox::GetMessageBounds(HANDLE fileHandle, DWORD Index)
 	for (int i = 0; i <= Index; i++)
 	{
 		SetFilePointer(fileHandle, currPos, 0, FILE_BEGIN);
-		ReadFile(fileHandle, &currSize, sizeof(DWORD), &countWritten, 0);
+		ReadFile(fileHandle, &currSize, sizeof(DWORD), &countRead, 0);
 		currPos += currSize + sizeof(DWORD);
 	}
 

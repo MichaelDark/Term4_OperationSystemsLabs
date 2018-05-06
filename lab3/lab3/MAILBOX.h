@@ -40,6 +40,7 @@ public:
 	DWORD Delete(DWORD Index, TCHAR* res);
 	TCHAR* operator[] (DWORD Index);
 
+	BOOL CheckIntegrity();
 	BOOL ExistsIndex(DWORD Index);
 	DWORD MessageCount();
 	DWORD TotalSize();
