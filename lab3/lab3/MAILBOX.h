@@ -5,14 +5,8 @@
 #include <windows.h>
 #include <string.h>
 
-#define HEADER_SIZE sizeof(DWORD) * 3
+#define HEADER_SIZE sizeof(DWORD) * 4
 #define SYMBOL_SIZE 2
-
-enum {
-	MAILBOX_Success = 1,
-	MAILBOX_Error = 0,
-	MAILBOX_Fatal = -1
-};
 
 struct Bounds {
 	DWORD firstByte;
@@ -25,33 +19,65 @@ struct Bounds {
 
 class Mailbox {
 	TCHAR FilePath[MAX_PATH];
-	DWORD _messageCount;
+	DWORD _messCount;
 	DWORD _totalSize;
 	DWORD _maxSize;
-	DWORD _lastState;
+	DWORD _checksum;
+
 	DWORD countWritten;
 	DWORD countRead;
+	BOOL FATAL;
 public:
 	Mailbox(LPCTSTR fName, size_t MaxSize = 1000);
 
-	DWORD WriteBegin(LPCTSTR Msg);
-	DWORD Write(LPCTSTR Msg, DWORD Index);
-	DWORD WriteEnd(LPCTSTR Msg);
-	DWORD Delete(DWORD Index, TCHAR* res);
+	//Write at the beginning with shift to right
+	//Return: wheter has a fatal error
+	BOOL WriteBegin(LPCTSTR Msg);
+
+	//Write at the certain index with shift to right
+	//Return: wheter has a fatal error
+	BOOL Write(LPCTSTR Msg, DWORD Index);
+
+	//Write at the end after the last element
+	//Return: wheter has a fatal error
+	BOOL WriteEnd(LPCTSTR Msg);
+
+	//Delete at the certain index
+	//Return: wheter has a fatal error
+	BOOL Delete(DWORD Index, TCHAR* res);
+
+	//Retrieve message from the certain index
+	//Return: message
 	TCHAR* operator[] (DWORD Index);
 
-	BOOL CheckIntegrity();
-	BOOL ExistsIndex(DWORD Index);
+
 	DWORD MessageCount();
 	DWORD TotalSize();
 	DWORD MaxSize();
-	DWORD Clear();
+	DWORD Checksum();
+
+	BOOL CheckIntegrity();
+	BOOL Clear();
+
 	~Mailbox() {}
 private:
+	BOOL ReadMailbox(LPCTSTR fName);
+	BOOL CreateMailbox(LPCTSTR fName, size_t MaxSize = 1000);
+
 	HANDLE OpenFileRW();
-	DWORD ShiftToRight(HANDLE fileRW, Bounds bounds);
-	DWORD ShiftToLeft(HANDLE fileRW, Bounds bounds);
+	BOOL WriteAtPosition(HANDLE fileHandle, DWORD Index, LPCTSTR Msg);
 	Bounds GetMessageBounds(HANDLE fileRW, DWORD Index);
-	DWORD WriteAtPosition(HANDLE fileRW, DWORD Position, LPCTSTR Msg);
-	DWORD UpdateHeader(HANDLE fileRW);
+	DWORD CalculateChecksum(HANDLE fileHandle);
+
+	BOOL CheckHierarchy(HANDLE fileHandle);
+	BOOL CheckChecksum(HANDLE fileHandle);
+	BOOL CheckIndexPossible(DWORD Index);
+	BOOL CheckIndexExist(DWORD Index);
+	BOOL CheckOverflow(DWORD messSize);
+
+	BOOL ShiftToRight(HANDLE fileRW, Bounds bounds);
+	BOOL ShiftToLeft(HANDLE fileRW, Bounds bounds);
+
+	BOOL UpdateHeader(HANDLE fileRW);
+	BOOL UpdateChecksum(HANDLE fileRW);
 };
