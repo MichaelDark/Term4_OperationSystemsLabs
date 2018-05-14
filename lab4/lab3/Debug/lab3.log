@@ -1,0 +1,12 @@
+﻿C:\Program Files\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (lab3.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  stdafx.cpp
+  MailBox.cpp
+d:\university\term_4\os - operating systems\lab4\lab3\mailbox.cpp(266): warning C4018: '<': signed/unsigned mismatch
+d:\university\term_4\os - operating systems\lab4\lab3\mailbox.cpp(281): warning C4018: '<=': signed/unsigned mismatch
+d:\university\term_4\os - operating systems\lab4\lab3\mailbox.cpp(326): warning C4018: '<': signed/unsigned mismatch
+d:\university\term_4\os - operating systems\lab4\lab3\mailbox.cpp(389): warning C4018: '>': signed/unsigned mismatch
+d:\university\term_4\os - operating systems\lab4\lab3\mailbox.cpp(407): warning C4018: '<': signed/unsigned mismatch
+  lab3.cpp
+d:\university\term_4\os - operating systems\lab4\lab3\lab3.cpp(50): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
+  lab3.vcxproj -> D:\university\term_4\OS - Operating Systems\lab4\Debug\lab4_mailbox.exe
