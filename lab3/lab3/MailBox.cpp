@@ -4,19 +4,19 @@
 
 //PUBLIC
 
-Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize) 
+Mailbox::Mailbox(LPCTSTR filePath, size_t MaxSize)
 {
 	FATAL = FALSE;
 	_tcscpy_s(FilePath, filePath);
-	HANDLE fileHandle = CreateFile(filePath, GENERIC_READ, 
+	HANDLE fileHandle = CreateFile(filePath, GENERIC_READ,
 		FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
 
-	if (fileHandle == INVALID_HANDLE_VALUE) 
+	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(fileHandle);
 		CreateMailbox(filePath, MaxSize);
 	}
-	else 
+	else
 	{
 		CloseHandle(fileHandle);
 		ReadMailbox(filePath);
@@ -333,7 +333,6 @@ BOOL Mailbox::CheckHierarchy(HANDLE fileHandle)
 		DWORD messageSize = (currMessSize / SYMBOL_SIZE);
 		currMess = new TCHAR[messageSize];
 		FATAL |= !ReadFile(fileHandle, currMess, currMessSize, &countRead, 0);
-		delete[] currMess;
 		if (currMessSize != countRead) { FATAL |= TRUE; }
 	}
 

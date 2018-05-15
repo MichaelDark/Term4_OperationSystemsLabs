@@ -1,16 +1,35 @@
-﻿  lab4_sysinfo.cpp
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(33): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
-  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(33): note: consider using '%ld' in the format string
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(34): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'LPVOID'
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(35): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'LPVOID'
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(36): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
-  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(36): note: consider using '%ld' in the format string
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(43): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
-  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(43): note: consider using '%ld' in the format string
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(44): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
-  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(44): note: consider using '%ld' in the format string
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(84): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'PVOID'
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(85): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'PVOID'
-d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(89): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
-  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(89): note: consider using '%ld' in the format string
-  lab4_sysinfo.vcxproj -> D:\university\term_4\OS - Operating Systems\lab4\x64\Debug\lab4_sysinfo.exe
+﻿C:\Program Files\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (lab4_sysinfo.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  lab4_sysinfo.cpp
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(68): warning C4129: 'N': unrecognized character escape sequence
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(69): warning C4129: 'N': unrecognized character escape sequence
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(44): warning C4477: 'printf' : format string '%#x' requires an argument of type 'unsigned int', but variadic argument 1 has type 'DWORDLONG'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(44): note: consider using '%llx' in the format string
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(44): note: consider using '%Ix' in the format string
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(44): note: consider using '%I64x' in the format string
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(45): warning C4477: 'printf' : format string '%u' requires an argument of type 'unsigned int', but variadic argument 1 has type 'SIZE_T'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(45): note: consider using '%llu' in the format string
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(45): note: consider using '%Iu' in the format string
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(45): note: consider using '%I64u' in the format string
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(69): warning C4477: 'printf' : format string '%#x' requires an argument of type 'unsigned int', but variadic argument 1 has type 'SIZE_T'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(69): note: consider using '%llx' in the format string
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(69): note: consider using '%Ix' in the format string
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(69): note: consider using '%I64x' in the format string
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(15): warning C4101: 'currentProcess': unreferenced local variable
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(16): warning C4101: 'p': unreferenced local variable
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(14): warning C4101: 'memInfo': unreferenced local variable
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(17): warning C4101: 'i': unreferenced local variable
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(80): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(80): note: consider using '%ld' in the format string
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(81): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'LPVOID'
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(82): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'LPVOID'
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(83): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(83): note: consider using '%ld' in the format string
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(90): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(90): note: consider using '%ld' in the format string
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(91): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(91): note: consider using '%ld' in the format string
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(131): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'PVOID'
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(132): warning C4477: 'wprintf' : format string '%I64x' requires an argument of type 'unsigned __int64', but variadic argument 1 has type 'PVOID'
+d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(136): warning C4477: 'wprintf' : format string '%16I64d' requires an argument of type '__int64', but variadic argument 1 has type 'DWORD'
+  d:\university\term_4\os - operating systems\lab4\lab4_sysinfo\lab4_sysinfo.cpp(136): note: consider using '%ld' in the format string
+  lab4_sysinfo.vcxproj -> D:\university\term_4\OS - Operating Systems\lab4\x64\Debug\lab4.exe

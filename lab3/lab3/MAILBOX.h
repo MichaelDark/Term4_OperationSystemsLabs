@@ -30,24 +30,10 @@ class Mailbox {
 public:
 	Mailbox(LPCTSTR fName, size_t MaxSize = 1000);
 
-	//Write at the beginning with shift to right
-	//Return: wheter has a fatal error
 	BOOL WriteBegin(LPCTSTR Msg);
-
-	//Write at the certain index with shift to right
-	//Return: wheter has a fatal error
 	BOOL Write(LPCTSTR Msg, DWORD Index);
-
-	//Write at the end after the last element
-	//Return: wheter has a fatal error
 	BOOL WriteEnd(LPCTSTR Msg);
-
-	//Delete at the certain index
-	//Return: wheter has a fatal error
 	BOOL Delete(DWORD Index, TCHAR* res);
-
-	//Retrieve message from the certain index
-	//Return: message
 	TCHAR* operator[] (DWORD Index);
 
 
